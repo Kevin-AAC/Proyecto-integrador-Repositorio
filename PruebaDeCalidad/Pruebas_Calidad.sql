@@ -47,3 +47,26 @@ SELECT Nombre, Proveedor, COUNT(*)
 FROM StagingJardineria.dbo.stg_producto
 GROUP BY Nombre, Proveedor
 HAVING COUNT(*) > 1;
+
+
+--Verificar valores atípicos (ejemplo, precios mucho mayores que promedio)
+WITH PrecioStats AS (
+  SELECT AVG(Precio_unidad) AS Promedio, STDEV(Precio_unidad) AS Desviacion
+  FROM StagingJardineria.dbo.stg_ventas
+)
+SELECT *
+FROM StagingJardineria.dbo.stg_ventas, PrecioStats
+WHERE Precio_unidad > Promedio + 3 * Desviacion;
+
+
+-- Ventas con id_stg_fecha que no existen en fechas
+SELECT sv.*
+FROM StagingJardineria.dbo.stg_ventas sv
+LEFT JOIN stg_fecha sf ON sv.id_stg_fecha = sf.id_stg_fecha
+WHERE sf.id_stg_fecha IS NULL;
+
+-- Ventas con id_stg_producto que no existan en productos
+SELECT sv.*
+FROM StagingJardineria.dbo.stg_ventas sv
+LEFT JOIN stg_producto sp ON sv.id_stg_producto = sp.id_stg_producto
+WHERE sp.id_stg_producto IS NULL;
